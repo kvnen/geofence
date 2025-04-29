@@ -1,0 +1,19 @@
+[
+  {
+    "arguments": [
+      "/sbin/avr-gcc",
+      "-mmcu=atmega328p",
+      "-Os",
+      "-std=c99",
+      "-fdata-sections",
+      "-ffunction-sections",
+      "-c",
+      "-o",
+      "main.o",
+      "main.c"
+    ],
+    "directory": "/home/kvnen/Documents/microcontrollers",
+    "file": "/home/kvnen/Documents/microcontrollers/main.c",
+    "output": "/home/kvnen/Documents/microcontrollers/main.o"
+  }
+]
