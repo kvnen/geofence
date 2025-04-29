@@ -2,7 +2,7 @@
   {
     "arguments": [
       "/sbin/avr-gcc",
-      "-mmcu=atmega328p",
+      "-mmcu=atmega328pb",
       "-Os",
       "-std=c99",
       "-fdata-sections",
