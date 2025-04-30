@@ -30,7 +30,7 @@ clean:
 	rm -f *.o *.elf *.hex
 
 flash: $(TARGET).hex
-	avrdude -c usbtiny -p $(MCU) -U flash:w:$(TARGET).hex
+	avrdude -p atmega328pb -Pusb -c xplainedmini -e -U flash:w:$(TARGET).hex:i
 
 .PHONY: all clean flash
 
