@@ -8,7 +8,7 @@ while (!(UCSR0A & (1 << UDRE0))){
 	UDR0 = UDR1;		
 }
 }
-
+//testing git......
 void initUART1(unsigned short ubrr){	//setup for uart receiving from gps
 	UBRR1H = (unsigned char)(ubrr>>8);	//set the higher UBRR
 	UBRR1L = (unsigned char) ubrr;		//set the lower UBRR
