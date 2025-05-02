@@ -14,6 +14,7 @@ int main(void)
 
 	while (1) 
 	{
+		//miikka test code here
 	}
 }
 
