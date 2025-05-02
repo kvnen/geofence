@@ -7,10 +7,15 @@
 
 int main(void)
 {
-	test();
-    while (1) 
-    {
-    }
+	initUART0(UBRR); //initializing the uarts
+	initUART1(UBRR);
+
+	sei();
+
+	while (1) 
+	{
+		//miikka test code here
+	}
 }
 //testi 
 
