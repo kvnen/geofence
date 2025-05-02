@@ -9,5 +9,6 @@
 
 void initUART1(unsigned short ubrr);
 void initUART0(unsigned short ubrr);
+void sendUART0(char input[]);
 
 #endif
