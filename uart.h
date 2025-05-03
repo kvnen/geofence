@@ -7,8 +7,24 @@
 #define BAUDRATE 9600
 #define UBRR (F_CPU/16/BAUDRATE-1)
 
+#define BUFFERSIZE 128 // has to be power of 2 eg 2^7 for blazingly fast wrapping but less than 255
+		       //
+typedef struct { //struct for buffer: head writes, tail reads
+	char data[BUFFERSIZE];
+	unsigned char head;
+	unsigned char tail;
+} buffer;
+
 void initUART1(unsigned short ubrr);
 void initUART0(unsigned short ubrr);
-void sendUART0(char input[]);
+void enableUART0Tx();
+void enableUART1Tx();
+void writeUART(buffer *wbuffer, char input[], unsigned char size);
+char readBuffer(buffer *rbuffer);
+buffer* getUART0RxBuffer();
+buffer* getUART1RxBuffer();
+buffer* getUART0TxBuffer();
+buffer* getUART1TxBuffer();
+			
 
 #endif

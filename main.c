@@ -14,9 +14,9 @@ int main(void)
 
 	while (1) 
 	{
-		sendUART0("helloworld");
+		writeUART(getUART0TxBuffer(), "HelloWorld", 10);
+		enableUART0Tx();
 		_delay_ms(1000);
 	}
 }
-//testi 
 
