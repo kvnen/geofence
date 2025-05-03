@@ -1,6 +1,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
-
+#include <util/delay.h> //delete later!!! need to make timebase etc...
 #include "nmea.h"
 #include "utils.h"
 #include "uart.h"
@@ -15,6 +15,7 @@ int main(void)
 	while (1) 
 	{
 		sendUART0("helloworld");
+		_delay_ms(1000);
 	}
 }
 //testi 
