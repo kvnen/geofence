@@ -13,10 +13,10 @@ int main(void)
 
 	sei();
 
-	char pmtk_cmd[] = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
-
-	writeUART(getUART1TxBuffer(), pmtk_cmd,51);
-	enableUART1Tx();
+//	char pmtk_cmd[] = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
+//
+//	writeUART(getUART1TxBuffer(), pmtk_cmd,51);
+//	enableUART1Tx();
 
 	while (1) 
 	{
