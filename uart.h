@@ -10,7 +10,7 @@
 #define BUFFERSIZE 128 // has to be power of 2 eg 2^7 for blazingly fast wrapping but less than 255
 		       //
 typedef struct { //struct for buffer: head writes, tail reads
-	unsigned char data[BUFFERSIZE];
+	char data[BUFFERSIZE];
 	unsigned char head;
 	unsigned char tail;
 } buffer;

@@ -47,7 +47,7 @@ void writeBuffer(buffer *wbuffer, char input){
 	if(wbuffer == NULL){ //check for nullptr
 		return;
 	}
-	if(((wbuffer->head + 1) & (BUFFERSIZE - 1)) & wbuffer->tail){ //if the buffer is full it becomes empty (very philosophical)
+	if(((wbuffer->head + 1) == (BUFFERSIZE - 1)) & wbuffer->tail){ //if the buffer is full it becomes empty (very philosophical)
 		wbuffer->tail = wbuffer->head; //this is done because otherwise when it would be read the old message would be cut off and mangled :(
 	}
 	wbuffer->data[wbuffer->head] = input; //write to buffer and move the head	
