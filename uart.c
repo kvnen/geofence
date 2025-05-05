@@ -47,9 +47,9 @@ void writeBuffer(buffer *wbuffer, char input){
 	if(wbuffer == NULL){ //check for nullptr
 		return;
 	}
-	//if(((wbuffer->head + 1) & (BUFFERSIZE - 1)) & wbuffer->tail){ //if the buffer is full it becomes empty (very philosophical)
-	//	wbuffer->tail = wbuffer->head; //this is done because otherwise when it would be read the old message would be cut off and mangled :(
-	//}
+	if(((wbuffer->head + 1) & (BUFFERSIZE - 1)) & wbuffer->tail){ //if the buffer is full it becomes empty (very philosophical)
+		wbuffer->tail = wbuffer->head; //this is done because otherwise when it would be read the old message would be cut off and mangled :(
+	}
 	wbuffer->data[wbuffer->head] = input; //write to buffer and move the head	
 	wbuffer->head = (wbuffer->head + 1) & (BUFFERSIZE - 1);
 	return;
@@ -71,11 +71,15 @@ void writeUART(buffer *wbuffer, char input[], unsigned char size){
 }
 
 void enableUART0Tx(){ //abstraction for uart tx enabling.
+	if(UART0TxBuffer->head != UART0TxBuffer->tail){
 	UCSR0B |= (1 << UDRIE0);
+	}
 }
 
 void enableUART1Tx(){
+	if(UART1TxBuffer->head != UART1TxBuffer->tail){
 	UCSR1B |= (1 << UDRIE1);
+	}
 }
 
 ISR(USART0_RX_vect){ //write to buffer from udr when receiving data.
@@ -97,7 +101,7 @@ ISR(USART0_UDRE_vect){ //read from buffer till end and then disable UARTTX autom
 
 ISR(USART1_UDRE_vect){
 	if(UART1TxBuffer->tail != UART1TxBuffer->head){
-		UDR1 = UART1TxBuffer->data[UART1TxBuffer->tail];
+		UDR1 = readBuffer(UART1TxBuffer);
 	}
 	else{
 		UCSR1B &= ~(1 << UDRIE1);

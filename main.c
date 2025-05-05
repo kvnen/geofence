@@ -7,16 +7,26 @@
 
 int main(void)
 {
+
 	initUART0(UBRR); //initializing the uarts
 	initUART1(UBRR);
 
 	sei();
 
+	char pmtk_cmd[] = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*01";
+
+	writeUART(getUART1TxBuffer(), pmtk_cmd,49);
+	writeBuffer(getUART1TxBuffer(),13);
+	writeBuffer(getUART1TxBuffer(),10);
+	enableUART1Tx();
+
 	while (1) 
 	{
-		writeUART(getUART0TxBuffer(), "HelloWorld", 10);
+		unsigned char input = readBuffer(getUART1RxBuffer());
+		if(input != 0xFF){
+		writeBuffer(getUART0TxBuffer(), input);
 		enableUART0Tx();
-		_delay_ms(1000);
+		}
 	}
 }
 
