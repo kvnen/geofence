@@ -102,11 +102,8 @@ int main(void){
 			area_save(lat, lon, radius);
 			home_set = 1;
 		}
-		float current_lat = get_gps_lat();
-		float current_lon = get_gps_lon();
 		uint16_t radius = geofence_radius();
-		uint16_t distance = distance_calculation(home_lat, home_lon, current_lat, current_lon); 
-		uint16_t distance = get_distance(); //!!!!!!!!! korvataan taa gps logiikalla 
+		uint16_t distance = distance_calculation(home_lat, home_lon, currentLocation.lat, currentLocation.lon); 
 
 		if (distance > radius){
 			geofence_violation = 1;

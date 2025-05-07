@@ -1,4 +1,7 @@
-#include "lcd.h"
+#include "LCD.h"
+
+#include <avr/io.h>
+#include <util/delay.h>
 
 void TWI_init(void){
 	TWSR0 = 0x00; // prescaler to 1

@@ -1,8 +1,7 @@
 #ifndef LCD_H
 #define LCD_H
+#include <stdint.h>
 #define F_CPU 16000000UL
-#include <avr/io.h>
-#include <util/delay.h>
 #define SCL_CLOCK 100000L
 #define LCD_ADDR 0x3E // LCD:n I2C-osoite
 
