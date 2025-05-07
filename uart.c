@@ -107,3 +107,58 @@ ISR(USART1_UDRE_vect){
 		UCSR1B &= ~(1 << UDRIE1);
 	}
 }
+unsigned char ASCIItoNum(unsigned char input){
+	if(input >= '0' && input <= '9') {
+		return input - '0';
+	}
+	if(input >= 'A' && input <= 'F') {
+		return input - 'A' + 10;
+	}
+	return 0;
+}
+
+unsigned char ASCIItoChecksum(unsigned char h, unsigned char l){
+	return(ASCIItoNum(h) << 4) | ASCIItoNum(l);
+}
+
+char* findNMEA(buffer *buf){
+	char *output = malloc(sizeof(char)*100);
+	const char *coutput = output;
+	for(unsigned char i = 0; i < 100; i++){
+		*output = '#';
+		output++;
+	}
+	output = (char*)coutput;
+	while(readBuffer(buf) != '$'){
+		if(buf->head == buf->tail){
+			return output;
+		}
+	}
+	char a;
+	while(1){
+		a = readBuffer(buf);
+		if(a == '*'){
+			break;
+		}
+		*output = a;
+		output++;
+	}
+	unsigned char RxCheckSum = ASCIItoChecksum(readBuffer(buf), readBuffer(buf));
+	unsigned char size = output-coutput;
+	output = (char*)coutput;
+	unsigned char CalcCheckSum = 0;
+	for(unsigned char i = 0; i < size; i++){
+		CalcCheckSum ^= *output;
+		output++;
+	}
+	output = (char*)coutput;
+	if(CalcCheckSum == RxCheckSum) return output;
+	else{
+		for(unsigned char i = 0; i < 100; i++){
+			*output = '#';
+			output++;
+		}
+		output = (char*)coutput;
+		return output;
+	} 
+}

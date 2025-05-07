@@ -26,6 +26,7 @@ buffer* getUART0RxBuffer();
 buffer* getUART1RxBuffer();
 buffer* getUART0TxBuffer();
 buffer* getUART1TxBuffer();
+char* findNMEA(buffer *buf);
 			
 
 #endif
