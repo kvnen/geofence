@@ -1,7 +1,11 @@
+#define F_CPU 16000000UL
+#include <util/delay.h>
 #include "utils.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <math.h>
 
+#define one_deg_to_meter 111320.0 //approx lenght in meters per degree
 
 void ADCint(void){
 	ADMUX = (1<<REFS0); 
@@ -43,24 +47,8 @@ void LEDblue_off(void){
 }
 
 //blinking with the leds using timer2
-void LEDblink(void) {
-	TCCR2A = (1 << WGM21); // put in ctc mode
-	TCCR2B = (1 << CS22);  // prescaler 64
-	OCR2A = 249; //250ticks = 1ms
-	TIMSK2 |= (1<<OCIE2A); //compare match interrupt
-	sei(); //global interrupts 
-}
 
-volatile uint16_t blinkcounter = 0;
 
-ISR(TIMER2_COMPA_vect) {
-	blinkcounter++;
-	if (blinkcounter >= 100){ //100ms delay
-		blinkcounter = 0;
-		PORTD ^= (1<<PORTD4);  //red led
-		PORTD ^= (1<<PORTD5);   //blue led
-	}
-}
 
 //PWM setup
 void PWMint(void){
@@ -73,4 +61,51 @@ void buzzeron(void){
 }
 void buzzeroff(void){
 	OCR0A = 0; // 0%
+}
+
+
+
+
+float home_lat = 0.0;
+float home_lon = 0.0;
+uint16_t home_radius = 0;
+
+void area_save(float lat, float lon, uint16_t radius){
+	home_lat = lat;
+	home_lon = lon;
+	home_radius = radius;
+}
+
+float distance_calculation(float lat1, float lon1, float lat2, float lon2){
+	float dx = (lon2 -lon1)*one_deg_to_meter;
+	float dy = (lat2-lat1)*one_deg_to_meter;
+	return sqrt(dx*dx +dy*dy);
+	
+}
+
+uint16_t geofence_check(float current_lat, float current_lon){
+	float distance = distance_calculation(home_lat, home_lon, current_lat, current_lon);
+	return(distance>home_radius);
+}
+
+void buttoninit(void) {
+	DDRD &= ~(1 << DDD2);    // Set PD2 as input
+	PORTD |= (1 << PORTD2);  // Enable pull-up resistor
+}
+
+
+uint8_t button_pressed(void) {
+	static uint8_t last_state = 0;
+	uint8_t current_state = !(PIND & (1 << PIND2));
+	if (current_state && !last_state) {
+		_delay_ms(10); // debounce delay
+		if (!(PIND & (1 << PIND2))) {
+			last_state = 1;
+			return 1; // Press detected
+		}
+	}
+	if (!current_state) {
+		last_state = 0;
+	}
+	return 0;
 }

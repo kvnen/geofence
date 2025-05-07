@@ -21,6 +21,13 @@ void PWMint(void);
 void buzzeron(void);
 void buzzeroff(void);
 
+
+
+//setting "home" and checking distance
+void area_save(float lat, float lon, uint16_t radius);
+float distance_calculation(float lat1, float lon1, float lat2, float lon2);
+uint16_t geofence_check(float current_lat, float current_lon);
 #endif
 
-
+void buttoninit(void);
+uint8_t button_pressed(void);

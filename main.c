@@ -1,3 +1,5 @@
+#define F_CPU 16000000UL
+#include <util/delay.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h> //delete later!!! need to make timebase etc...
@@ -6,27 +8,69 @@
 #include "uart.h"
 
 
-uint16_t get_distance(void){ //!!!!!!!!!!!!!!!!!1 korvataan t‰‰ gps functiolla
-	return 10;
+
+
+volatile uint16_t geofence_violation = 0;
+volatile uint16_t led_toggle_flag = 0;
+
+
+
+
+
+void timer_for_led(void) {
+	TCCR2A = (1 <<WGM21);
+	TCCR2B = (1 << CS22) | (1 <<CS20);
+	OCR2A = 24999;
+	TIMSK2 |= (1<<OCIE2A);
 }
+ISR(TIMER2_COMPA_vect){
+	if (geofence_violation){
+		if (led_toggle_flag == 0)
+		{
+		
+		PORTD |=(1<<PORTD4);
+		PORTD &= ~(1<<PORTD5);
+		led_toggle_flag = 1;
+		} else {
+		
+		PORTD &= ~(1<<PORTD4);
+		PORTD |= (1<<PORTD5);
+		led_toggle_flag = 0;
+		}
+	} else {
+		PORTD &= ~(1<<PORTD4);
+		PORTD &= ~(1<<PORTD5);
+		led_toggle_flag =0;
+	}
+}
+
+
+
+
+
 
 
 int main(void)
 {
 	ADCint(); // read potentiometer
 	LEdint(); //set ledpins
-	LEDblink(); // blinking with leds
+	
 	PWMint(); //buzzer with pwm
-
+	buttoninit();
 	initUART0(UBRR); //initializing the uarts
 	initUART1(UBRR);
+volatile float home_lat = 0.0;
+volatile float home_lon = 0.0;
+
 
 	sei();
 
-//	char pmtk_cmd[] = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
-//
-//	writeUART(getUART1TxBuffer(), pmtk_cmd,51);
-//	enableUART1Tx();
+uint16_t home_set =0;
+
+
+
+
+
 
 	while (1) 
 	{
@@ -36,13 +80,29 @@ int main(void)
 		enableUART0Tx();
 		}
 		
+		
+		if(button_pressed() && !home_set){
+			float lat = get_gps_lat();
+			float lon = get_gps_lon();
+			uint16_t radius = geofence_radius();
+			
+			home_lat = lat;
+			home_lon = lon;
+			
+			area_save(lat, lon, radius);
+			home_set = 1;
+		}
+		float current_lat = get_gps_lat();
+		float current_lon = get_gps_lon();
 		uint16_t radius = geofence_radius();
-		uint16_t distance = get_distance(); //!!!!!!!!! korvataan t‰‰ gps logiikalla 
+		
+		uint16_t distance = distance_calculation(home_lat, home_lon, current_lat, current_lon); 
 		
 		if (distance > radius){
-			buzzeron(); //buzzer turn on
-		} else
-		{
+			geofence_violation = 1;
+			buzzeron();
+		} else{
+			geofence_violation = 0;
 		buzzeroff(); //buzzer off
 		}	
 	}
