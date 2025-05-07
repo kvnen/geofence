@@ -45,28 +45,9 @@ ISR(TIMER2_COMPA_vect){
 int main(void){
 	// LCD!!
 	
-	
 	TWI_init();
 	LCD_init();
-
-	const char* text1 = "moi";
-	const char* text2 = "heihei";
-	const char* text3 = "olele";
-	const char* text4 = "olala";
-
-	LCD_setCursor(0, 0);
-	LCD_print(text1);
-
-	LCD_setCursor(0, 1);
-	LCD_print(text2);
 	
-	_delay_ms(200);
-	
-	LCD_setCursor(0, 0);
-	LCD_print(text3);
-
-	LCD_setCursor(0, 1);
-	LCD_print(text4);
 // ^LCD!
 	
 	ADCint(); // read potentiometer
@@ -83,25 +64,37 @@ int main(void){
 
 	uint16_t home_set =0;
 
+	enableUART1Tx();
+
+	for(unsigned char i = 0; i < 10; i++){
+		char pmtk_cmd[] = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
+		_delay_ms(100);
+		writeUART(getUART1TxBuffer(), pmtk_cmd,51);
+		enableUART1Tx();
+	}
+
+
+	posdata location;
 	while (1) 
 	{
-		posdata currentLocation = parseNMEA(getUART1RxBuffer());
-		if(currentLocation.lat > 1){
-			writeUART(getUART0TxBuffer(), "fix???\r\n", 8);
-			enableUART0Tx();
-		}
+		location = parseNMEA(getUART1RxBuffer());
 
+
+		LCD_setCursor(0, 0);
+		LCD_print(location.lats);
+		LCD_setCursor(0, 1);
+		LCD_print(location.lons);
 		if(button_pressed() && !home_set){
 			uint16_t radius = geofence_radius();
 
-			home_lat = currentLocation.lat;
-			home_lon = currentLocation.lon;
+			home_lat = location.lat;
+			home_lon = location.lon;
 
-			area_save(currentLocation.lat,currentLocation.lon , radius);
+			area_save(location.lat,location.lon , radius);
 			home_set = 1;
 		}
 		uint16_t radius = geofence_radius();
-		uint16_t distance = distance_calculation(home_lat, home_lon, currentLocation.lat, currentLocation.lon); 
+		uint16_t distance = distance_calculation(home_lat, home_lon, location.lat, location.lon); 
 
 		if (distance > radius){
 			geofence_violation = 1;
