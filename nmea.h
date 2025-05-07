@@ -3,11 +3,10 @@
 //CODE HERE
 #include "uart.h"
 typedef struct {
-	unsigned short lat;
-	unsigned short lon;
-	unsigned short height;
+	float lat;
+	float lon;
 	int fix;
 	int satellites;
 } posdata;
-posdata parseNMEA(buffer *buf);
+posdata parseNMEA(char *input);
 #endif

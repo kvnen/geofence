@@ -30,9 +30,11 @@ int main(void)
 
 	while (1) 
 	{
-		_delay_ms(1500);
-		writeUART(getUART0TxBuffer(), findNMEA(getUART1RxBuffer()), 77);
-		enableUART0Tx();
+		posdata input = parseNMEA(getUART1RxBuffer());
+		if(input.lat > 1){
+			writeUART(getUART0TxBuffer(), "fix???\r\n", 8);
+			enableUART0Tx();
+		}
 		uint16_t radius = geofence_radius();
 		uint16_t distance = get_distance(); //!!!!!!!!! korvataan taa gps logiikalla 
 		

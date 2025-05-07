@@ -4,17 +4,22 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>
 
+#define NMEALENGTH 82
+
 buffer *UART0RxBuffer = NULL; //something about null pointers being unsafe or something
 buffer *UART0TxBuffer = NULL;
-buffer *UART1RxBuffer = NULL;
+char *UART1RxBuffer = NULL;
+char *UART1RxStart = NULL;
+char *UART1RxOutput = NULL;
+char *UART1RxOutputStart = NULL;
 buffer *UART1TxBuffer = NULL;
 
 buffer* getUART0RxBuffer(){
 	return UART0RxBuffer;
 }
 
-buffer* getUART1RxBuffer(){
-	return UART1RxBuffer;
+char* getUART1RxBuffer(){
+	return UART1RxOutputStart;
 }
 
 buffer* getUART0TxBuffer(){
@@ -30,7 +35,10 @@ void initUART1(unsigned short ubrr){	//setup for uart receiving from gps
 	UBRR1L = (unsigned char) ubrr;		//set the lower UBRR
 	UCSR1B = (1<<TXEN1)|(1<<RXEN1)|(1<<RXCIE1);	//enable transmit, receive and receive interrupt
 	UCSR1C = (1<<UCSZ10)|(1<<UCSZ11);	//set message to 8 bits
-	UART1RxBuffer = malloc(sizeof(buffer)); 
+	UART1RxBuffer = malloc(sizeof(char)*82); 
+	UART1RxOutput = malloc(sizeof(char)*82); 
+	UART1RxStart = UART1RxBuffer; 
+	UART1RxOutputStart = UART1RxOutput;
 	UART1TxBuffer = malloc(sizeof(buffer)); 
 }
 
@@ -85,9 +93,27 @@ void enableUART1Tx(){
 ISR(USART0_RX_vect){ //write to buffer from udr when receiving data.
 	writeBuffer(UART0RxBuffer, UDR0);
 }
-
 ISR(USART1_RX_vect){
-	writeBuffer(UART1RxBuffer, UDR1);
+	if(UDR1 == '$'){ //$ means the nmea message is starting so set everything to 0 etc.
+		UART1RxBuffer = UART1RxStart; 
+		*UART1RxBuffer = UDR1;
+		UART1RxBuffer++;
+	}
+	else if(UART1RxBuffer - UART1RxStart < NMEALENGTH){ 
+		*UART1RxBuffer = UDR1;
+		UART1RxBuffer++;
+	}
+	else{
+		UART1RxOutput = UART1RxOutputStart;
+		UART1RxBuffer = UART1RxStart;
+		for(unsigned char i = 0; i < NMEALENGTH; i++){
+			*UART1RxOutput = *UART1RxBuffer;
+			UART1RxOutput++;
+			UART1RxBuffer++;
+		}
+		UART1RxOutput = UART1RxOutputStart;
+		UART1RxBuffer = UART1RxStart;
+	}
 }
 
 ISR(USART0_UDRE_vect){ //read from buffer till end and then disable UARTTX automatically when buffer runs empty
@@ -119,46 +145,4 @@ unsigned char ASCIItoNum(unsigned char input){
 
 unsigned char ASCIItoChecksum(unsigned char h, unsigned char l){
 	return(ASCIItoNum(h) << 4) | ASCIItoNum(l);
-}
-
-char* findNMEA(buffer *buf){
-	char *output = malloc(sizeof(char)*100);
-	const char *coutput = output;
-	for(unsigned char i = 0; i < 100; i++){
-		*output = '#';
-		output++;
-	}
-	output = (char*)coutput;
-	while(readBuffer(buf) != '$'){
-		if(buf->head == buf->tail){
-			return output;
-		}
-	}
-	char a;
-	while(1){
-		a = readBuffer(buf);
-		if(a == '*'){
-			break;
-		}
-		*output = a;
-		output++;
-	}
-	unsigned char RxCheckSum = ASCIItoChecksum(readBuffer(buf), readBuffer(buf));
-	unsigned char size = output-coutput;
-	output = (char*)coutput;
-	unsigned char CalcCheckSum = 0;
-	for(unsigned char i = 0; i < size; i++){
-		CalcCheckSum ^= *output;
-		output++;
-	}
-	output = (char*)coutput;
-	if(CalcCheckSum == RxCheckSum) return output;
-	else{
-		for(unsigned char i = 0; i < 100; i++){
-			*output = '#';
-			output++;
-		}
-		output = (char*)coutput;
-		return output;
-	} 
 }
