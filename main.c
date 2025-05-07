@@ -7,10 +7,6 @@
 #include "utils.h"
 #include "uart.h"
 
-
-<<<<<<< HEAD
-
-
 volatile uint16_t geofence_violation = 0;
 volatile uint16_t led_toggle_flag = 0;
 
@@ -23,10 +19,6 @@ void timer_for_led(void) {
 	TCCR2B = (1 << CS22) | (1 <<CS20);
 	OCR2A = 24999;
 	TIMSK2 |= (1<<OCIE2A);
-=======
-uint16_t get_distance(void){ //!!!!!!!!!!!!!!!!!1 korvataan taa gps functiolla
-	return 10;
->>>>>>> origin/main
 }
 ISR(TIMER2_COMPA_vect){
 	if (geofence_violation){
@@ -49,33 +41,20 @@ ISR(TIMER2_COMPA_vect){
 	}
 }
 
-
-
-
-
-
-
-int main(void)
-{
+int main(void){
 	ADCint(); // read potentiometer
 	LEdint(); //set ledpins
-	
+
 	PWMint(); //buzzer with pwm
 	buttoninit();
 	initUART0(UBRR); //initializing the uarts
 	initUART1(UBRR);
-volatile float home_lat = 0.0;
-volatile float home_lon = 0.0;
-
+	volatile float home_lat = 0.0;
+	volatile float home_lon = 0.0;
 
 	sei();
 
-uint16_t home_set =0;
-
-
-
-
-
+	uint16_t home_set =0;
 
 	while (1) 
 	{
@@ -84,36 +63,30 @@ uint16_t home_set =0;
 			writeUART(getUART0TxBuffer(), "fix???\r\n", 8);
 			enableUART0Tx();
 		}
-<<<<<<< HEAD
-		
-		
+
 		if(button_pressed() && !home_set){
 			float lat = get_gps_lat();
 			float lon = get_gps_lon();
 			uint16_t radius = geofence_radius();
-			
+
 			home_lat = lat;
 			home_lon = lon;
-			
+
 			area_save(lat, lon, radius);
 			home_set = 1;
 		}
 		float current_lat = get_gps_lat();
 		float current_lon = get_gps_lon();
 		uint16_t radius = geofence_radius();
-		
 		uint16_t distance = distance_calculation(home_lat, home_lon, current_lat, current_lon); 
-=======
-		uint16_t radius = geofence_radius();
 		uint16_t distance = get_distance(); //!!!!!!!!! korvataan taa gps logiikalla 
->>>>>>> origin/main
-		
+
 		if (distance > radius){
 			geofence_violation = 1;
 			buzzeron();
 		} else{
 			geofence_violation = 0;
-		buzzeroff(); //buzzer off
+			buzzeroff(); //buzzer off
 		}	
 	}
 }
