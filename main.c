@@ -6,6 +6,7 @@
 #include "nmea.h"
 #include "utils.h"
 #include "uart.h"
+#include "LCD.h"
 
 volatile uint16_t geofence_violation = 0;
 volatile uint16_t led_toggle_flag = 0;
@@ -42,6 +43,32 @@ ISR(TIMER2_COMPA_vect){
 }
 
 int main(void){
+	// LCD!!
+	
+	
+	TWI_init();
+	LCD_init();
+
+	const char* text1 = "moi";
+	const char* text2 = "heihei";
+	const char* text3 = "olele";
+	const char* text4 = "olala";
+
+	LCD_setCursor(0, 0);
+	LCD_print(text1);
+
+	LCD_setCursor(0, 1);
+	LCD_print(text2);
+	
+	_delay_ms(200);
+	
+	LCD_setCursor(0, 0);
+	LCD_print(text3);
+
+	LCD_setCursor(0, 1);
+	LCD_print(text4);
+// ^LCD!
+	
 	ADCint(); // read potentiometer
 	LEdint(); //set ledpins
 
