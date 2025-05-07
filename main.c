@@ -86,20 +86,18 @@ int main(void){
 	while (1) 
 	{
 		posdata currentLocation = parseNMEA(getUART1RxBuffer());
-		if(input.lat > 1){
+		if(currentLocation.lat > 1){
 			writeUART(getUART0TxBuffer(), "fix???\r\n", 8);
 			enableUART0Tx();
 		}
 
 		if(button_pressed() && !home_set){
-			float lat = get_gps_lat();
-			float lon = get_gps_lon();
 			uint16_t radius = geofence_radius();
 
-			home_lat = lat;
-			home_lon = lon;
+			home_lat = currentLocation.lat;
+			home_lon = currentLocation.lon;
 
-			area_save(lat, lon, radius);
+			area_save(currentLocation.lat,currentLocation.lon , radius);
 			home_set = 1;
 		}
 		uint16_t radius = geofence_radius();

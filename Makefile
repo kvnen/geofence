@@ -4,7 +4,7 @@ F_CPU = 16000000UL
 BAUD = 9600
 
 # === Files ===
-SRC = main.c uart.c utils.c nmea.c
+SRC = main.c uart.c utils.c nmea.c LCD.c
 OBJ = $(SRC:.c=.o)
 TARGET = geofence
 
