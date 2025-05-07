@@ -6,7 +6,7 @@
 #include "uart.h"
 
 
-uint16_t get_distance(void){ //!!!!!!!!!!!!!!!!!1 korvataan tää gps functiolla
+uint16_t get_distance(void){ //!!!!!!!!!!!!!!!!!1 korvataan taa gps functiolla
 	return 10;
 }
 
@@ -30,14 +30,11 @@ int main(void)
 
 	while (1) 
 	{
-		unsigned char input = readBuffer(getUART1RxBuffer());
-		if(input != 0xFF){
-		writeBuffer(getUART0TxBuffer(), input);
+		_delay_ms(1500);
+		writeUART(getUART0TxBuffer(), findNMEA(getUART1RxBuffer()), 77);
 		enableUART0Tx();
-		}
-		
 		uint16_t radius = geofence_radius();
-		uint16_t distance = get_distance(); //!!!!!!!!! korvataan tää gps logiikalla 
+		uint16_t distance = get_distance(); //!!!!!!!!! korvataan taa gps logiikalla 
 		
 		if (distance > radius){
 			buzzeron(); //buzzer turn on
