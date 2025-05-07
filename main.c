@@ -58,7 +58,7 @@ int main(void){
 
 	while (1) 
 	{
-		posdata input = parseNMEA(getUART1RxBuffer());
+		posdata currentLocation = parseNMEA(getUART1RxBuffer());
 		if(input.lat > 1){
 			writeUART(getUART0TxBuffer(), "fix???\r\n", 8);
 			enableUART0Tx();
