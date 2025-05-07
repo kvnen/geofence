@@ -8,6 +8,7 @@
 #include "uart.h"
 
 
+<<<<<<< HEAD
 
 
 volatile uint16_t geofence_violation = 0;
@@ -22,6 +23,10 @@ void timer_for_led(void) {
 	TCCR2B = (1 << CS22) | (1 <<CS20);
 	OCR2A = 24999;
 	TIMSK2 |= (1<<OCIE2A);
+=======
+uint16_t get_distance(void){ //!!!!!!!!!!!!!!!!!1 korvataan taa gps functiolla
+	return 10;
+>>>>>>> origin/main
 }
 ISR(TIMER2_COMPA_vect){
 	if (geofence_violation){
@@ -74,11 +79,12 @@ uint16_t home_set =0;
 
 	while (1) 
 	{
-		unsigned char input = readBuffer(getUART1RxBuffer());
-		if(input != 0xFF){
-		writeBuffer(getUART0TxBuffer(), input);
-		enableUART0Tx();
+		posdata input = parseNMEA(getUART1RxBuffer());
+		if(input.lat > 1){
+			writeUART(getUART0TxBuffer(), "fix???\r\n", 8);
+			enableUART0Tx();
 		}
+<<<<<<< HEAD
 		
 		
 		if(button_pressed() && !home_set){
@@ -97,6 +103,10 @@ uint16_t home_set =0;
 		uint16_t radius = geofence_radius();
 		
 		uint16_t distance = distance_calculation(home_lat, home_lon, current_lat, current_lon); 
+=======
+		uint16_t radius = geofence_radius();
+		uint16_t distance = get_distance(); //!!!!!!!!! korvataan taa gps logiikalla 
+>>>>>>> origin/main
 		
 		if (distance > radius){
 			geofence_violation = 1;

@@ -23,9 +23,10 @@ void writeUART(buffer *wbuffer, char input[], unsigned char size);
 char readBuffer(buffer *rbuffer);
 void writeBuffer(buffer *wbuffer, char input);
 buffer* getUART0RxBuffer();
-buffer* getUART1RxBuffer();
+char* getUART1RxBuffer();
 buffer* getUART0TxBuffer();
 buffer* getUART1TxBuffer();
+char* findNMEA(buffer *buf);
 			
 
 #endif

@@ -1,35 +1,72 @@
-#include "nmea.h"
-#include "uart.h"
-
 #include <stdlib.h>
+#include "nmea.h"
 
-pos parseNMEA(char *input){
-	pos output;
-	if(readBuffer(getUART1RxBuffer())=='$'){
-		while(readBuffer(getUART1RxBuffer())!=','); //GPGGA
-		if(readBuffer(getUART1RxBuffer())==','){ //detect if no pos fix and return 0
-			output.satellites = 0;
-			output.lat = 0;
-			output.lon = 0;
-			return output;
-		}
-		char lat[9];
-		for(unsigned char i = 0; i < 9; i++){ //0000.0000
-			lat[i] = readBuffer(getUART1RxBuffer());
-		}
-		output.lat = atof(lat);
-		for(unsigned char i = 1; i <= 3; i++){ //,N,
-		readBuffer(getUART1RxBuffer());
-		}
-		char lon[10];
-		for(unsigned char i = 0; i < 10; i++){ //00000.0000
-			lon[i] = readBuffer(getUART1RxBuffer());
-		}
-		output.lon = atof(lon);
-		for(unsigned char i = 1; i <= 3; i++){ //,N,
-		readBuffer(getUART1RxBuffer());
-		}
-		output.satellites = readBuffer(getUART1RxBuffer()); 
-	}	
-	return output;
+float parseFloat(char **input) {
+    char buffer[16] = {0};
+    int i = 0;
+
+    while (**input != ',' && **input != '\0' && i < sizeof(buffer) - 1) {
+        buffer[i++] = **input;
+        (*input)++;
+    }
+
+    if (**input == ',') {
+        (*input)++;
+    }
+
+    return atof(buffer);
 }
+
+int parseInt(char **input) {
+    char buffer[8] = {0};
+    int i = 0;
+
+    while (**input != ',' && **input != '\0' && i < sizeof(buffer) - 1) {
+        buffer[i++] = **input;
+        (*input)++;
+    }
+
+    if (**input == ',') {
+        (*input)++;
+    }
+
+    return atoi(buffer);
+}
+
+posdata parseNMEA(char *input) {
+    posdata output = {0};
+
+    // Skip first 2 fields: "$GPGGA", "time"
+    for (int i = 0; i < 2; i++) {
+        while (*input != ',' && *input != '\0') input++;
+        if (*input == ',') input++;
+    }
+
+    // If latitude is empty, return default data
+    if (*input == ',') {
+        return output;
+    }
+
+    // Latitude
+    output.lat = parseFloat(&input);
+
+    // N/S
+    if (*input != ',' && *input != '\0') input++;
+    if (*input == ',') input++;
+
+    // Longitude
+    output.lon = parseFloat(&input);
+
+    // E/W
+    if (*input != ',' && *input != '\0') input++;
+    if (*input == ',') input++;
+
+    // Fix status
+    output.fix = parseInt(&input);
+
+    // Satellites
+    output.satellites = parseInt(&input);
+
+    return output;
+}
+
