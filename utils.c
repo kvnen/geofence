@@ -58,7 +58,7 @@ void PWMint(void){
 	TCCR0B = (1<<CS01); //prescaler 8
 }	
 void buzzeron(void){
-	OCR0A = 249; // 100% 
+	OCR0A = 254; // 100% 
 }
 void buzzeroff(void){
 	OCR0A = 0; // 0%
