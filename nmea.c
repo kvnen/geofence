@@ -5,7 +5,7 @@ char *tokenPtrs[15];
 void tokenize(char *input, char *tokenPtrs[], unsigned char maxTokens){
 	unsigned char tokens = 0;
 	tokenPtrs[tokens++] = input;
-	for(unsigned char i = 0; tokens < maxTokens && input[i] != '\r'; i++){
+	for(unsigned char i = 0; tokens < maxTokens && input[i] != '*'; i++){
 		if(input[i] == ','){
 			input[i] = '\0';
 			tokenPtrs[tokens++] = &input[i + 1];

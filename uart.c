@@ -9,6 +9,7 @@
 buffer *UART0RxBuffer = NULL; //something about null pointers being unsafe or something
 buffer *UART0TxBuffer = NULL;
 char *UART1RxBuffer = NULL;
+char *UART1RxOutput = NULL;
 buffer *UART1TxBuffer = NULL;
 
 buffer* getUART0RxBuffer(){
@@ -16,7 +17,7 @@ buffer* getUART0RxBuffer(){
 }
 
 char* getUART1RxBuffer(){
-		return UART1RxBuffer;
+	return UART1RxOutput;
 }
 
 buffer* getUART0TxBuffer(){
@@ -33,6 +34,7 @@ void initUART1(unsigned short ubrr){	//setup for uart receiving from gps
 	UCSR1B = (1<<TXEN1)|(1<<RXEN1)|(1<<RXCIE1);	//enable transmit, receive and receive interrupt
 	UCSR1C = (1<<UCSZ10)|(1<<UCSZ11);	//set message to 8 bits
 	UART1RxBuffer = malloc(sizeof(char)*NMEALENGTH); 
+	UART1RxOutput = malloc(sizeof(char)*NMEALENGTH); 
 	UART1TxBuffer = malloc(sizeof(buffer)); 
 }
 
@@ -88,13 +90,15 @@ ISR(USART0_RX_vect){ //write to buffer from udr when receiving data.
 	writeBuffer(UART0RxBuffer, UDR0);
 }
 volatile unsigned char count = 0;
-char gpgga[] = "GPGGA";
 ISR(USART1_RX_vect){
 	if(UDR1 == '$'){ //$ means the nmea message 
 		UART1RxBuffer[count++] = UDR1;
 	}
-	else if(UDR1 == '\n'){
+	else if(UDR1 == '*'){
 		UART1RxBuffer[count] = UDR1;
+		for(unsigned char i = 0; i < NMEALENGTH; i++){
+			UART1RxOutput[i] = UART1RxBuffer[i];
+		}
 		count = 0;
 	}
 	else{

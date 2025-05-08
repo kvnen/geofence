@@ -5,7 +5,8 @@
 #include <avr/interrupt.h>
 #include <math.h>
 
-#define one_deg_to_meter 111320.0 //approx lenght in meters per degree
+#define DEGTOMETER 111320.0 //approx lenght in meters per degree
+#define PI 3.14159265f 
 
 void ADCint(void){
 	ADMUX = (1<<REFS0); 
@@ -20,7 +21,7 @@ uint16_t ADCreading(void){
 	
 uint16_t geofence_radius(void){
 	uint16_t ADCvalue = ADCreading(); //potentiometer on PC0
-	return 5 + ((uint32_t)ADCvalue*(100 - 5)) /1023;
+	return 5 + ((uint32_t)ADCvalue*(10 - 5)) /1023;
 	//This should scale 0-1023 to our wanted range (for now) 5-100meters
 }
 
@@ -76,11 +77,26 @@ void area_save(float lat, float lon, uint16_t radius){
 	home_radius = radius;
 }
 
-float distance_calculation(float lat1, float lon1, float lat2, float lon2){
-	float dx = (lon2 -lon1)*one_deg_to_meter;
-	float dy = (lat2-lat1)*one_deg_to_meter;
-	return sqrt(dx*dx +dy*dy);
-	
+// Convert degrees to radians
+float deg_to_rad(float deg) {
+    return deg * (PI / 180.0f);
+}
+
+// Flat Earth distance approximation using floats
+float distance_calculation(float lat1, float lon1, float lat2, float lon2) {
+    // Coordinate differences
+    float dLat = lat2 - lat1;
+    float dLon = lon2 - lon1;
+
+    // Convert latitude difference to meters
+    float latDist = dLat * DEGTOMETER;
+
+    // Use average latitude to convert longitude
+    float avgLat = (lat1 + lat2) / 2.0f;
+    float lonDist = dLon * DEGTOMETER * cosf(deg_to_rad(avgLat));
+
+    // Pythagorean distance
+    return sqrtf(latDist * latDist + lonDist * lonDist);
 }
 
 uint16_t geofence_check(float current_lat, float current_lon){

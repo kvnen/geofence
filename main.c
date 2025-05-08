@@ -11,16 +11,13 @@
 volatile uint16_t geofence_violation = 0;
 volatile uint16_t led_toggle_flag = 0;
 
-
-
-
-
 void timer_for_led(void) {
 	TCCR2A = (1 <<WGM21);
 	TCCR2B = (1 << CS22) | (1 <<CS20);
 	OCR2A = 24999;
 	TIMSK2 |= (1<<OCIE2A);
 }
+
 ISR(TIMER2_COMPA_vect){
 	if (geofence_violation){
 		if (led_toggle_flag == 0)
@@ -62,7 +59,7 @@ int main(void){
 
 	sei();
 
-	uint16_t home_set =0;
+	uint8_t home_set =0;
 
 	enableUART1Tx();
 
@@ -79,12 +76,18 @@ int main(void){
 	{
 		location = parseNMEA(getUART1RxBuffer());
 
+		writeUART(getUART0TxBuffer(), getUART1RxBuffer(), 82);
+		enableUART0Tx();
 
 		LCD_setCursor(0, 0);
 		LCD_print(location.lats);
 		LCD_setCursor(0, 1);
 		LCD_print(location.lons);
+
 		if(button_pressed() && !home_set){
+			LCD_setCursor(13, 1);
+			LCD_print("set");
+
 			uint16_t radius = geofence_radius();
 
 			home_lat = location.lat;
@@ -93,6 +96,7 @@ int main(void){
 			area_save(location.lat,location.lon , radius);
 			home_set = 1;
 		}
+
 		uint16_t radius = geofence_radius();
 		uint16_t distance = distance_calculation(home_lat, home_lon, location.lat, location.lon); 
 
