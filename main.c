@@ -13,13 +13,16 @@ volatile uint16_t led_toggle_flag = 0;
 
 void timer_for_led(void) {
 	TCCR2A = (1 <<WGM21);
-	TCCR2B = (1 << CS22) | (1 <<CS20);
-	OCR2A = 24999;
+	TCCR2B = (1 << CS22) | (1 <<CS20) | (1<<CS21);  //prescaler 1024
+	OCR2A = 255;
 	TIMSK2 |= (1<<OCIE2A);
 }
+	volatile tick_count = 0;
 
 ISR(TIMER2_COMPA_vect){
-	if (geofence_violation){
+	if (tick_count > 64){
+		tick_count = 0;
+		if (geofence_violation){
 		if (led_toggle_flag == 0)
 		{
 		
@@ -36,6 +39,7 @@ ISR(TIMER2_COMPA_vect){
 		PORTD &= ~(1<<PORTD4);
 		PORTD &= ~(1<<PORTD5);
 		led_toggle_flag =0;
+		}
 	}
 }
 
