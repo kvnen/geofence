@@ -22,8 +22,9 @@ int main(void){
 	buttoninit();
 	initUART0(UBRR); //initializing the uarts
 	initUART1(UBRR);
-	volatile float home_lat = 0.0;
-	volatile float home_lon = 0.0;
+	float home_lat = 0.0;
+	float home_lon = 0.0;
+	uint16_t radius = 0;
 
 	sei();
 
@@ -58,7 +59,6 @@ int main(void){
 
 		policeLightsOn();
 
-		uint16_t radius = 0;
 		if(button_pressed() && !home_set){
 			LCD_setCursor(13, 1);
 			LCD_print("set");
