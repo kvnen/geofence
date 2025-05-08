@@ -75,6 +75,12 @@ int main(void){
 	while (1) 
 	{
 		location = parseNMEA(getUART1RxBuffer());
+		
+		LCD_setCursor(0,0);
+		LCD_print("          ");
+		LCD_setCursor(0,1);
+		LCD_print("          ");
+
 
 		writeUART(getUART0TxBuffer(), getUART1RxBuffer(), 82);
 		enableUART0Tx();
