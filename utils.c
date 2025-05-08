@@ -53,15 +53,15 @@ void LEDblue_off(void){
 
 //PWM setup
 void PWMint(void){
-	DDRD |= (1<<PORTD6);
 	TCCR0A = (1<<COM0A1) | (1<<WGM01) | (1<<WGM00); //fast pwm
-	TCCR0B = (1<<CS01); //prescaler 8
+	TCCR0B = (1<<CS00)|(1<<CS01); //prescaler 8
+	OCR0A = 124; // 100% 
 }	
 void buzzeron(void){
-	OCR0A = 254; // 100% 
+	DDRD |= (1<<PORTD6);
 }
 void buzzeroff(void){
-	OCR0A = 0; // 0%
+	DDRD &= ~(1<<PORTD6);
 }
 
 
