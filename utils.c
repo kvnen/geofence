@@ -125,3 +125,31 @@ uint8_t button_pressed(void) {
 	}
 	return 0;
 }
+
+void timer_for_led(void) { //setup for timer that blinks the leds
+	TCCR2A |= (1 <<WGM21);
+	TCCR2B |= (1 << CS22) | (1 <<CS20) | (1<<CS21);  //prescaler 1024
+	OCR2A = 249;
+}
+
+void policeLightsOn(){ //checks if the lights are already on and then turns them on if not
+	if(!(TIMSK2 & (1<<OCIE2A))){
+		TIMSK2 |= (1<<OCIE2A); 
+		PORTD |= (1<<PORTD4); //this is to offset the other led for easier toggling in ISR
+	}
+}
+
+void policeLightsOff(){ //turns of the lights 
+	TIMSK2 &= ~(1<<OCIE2A);
+	PORTD &= ~(1<<PORTD5)|(1<<PORTD4);
+}
+
+volatile unsigned char tick_count = 0; 
+
+ISR(TIMER2_COMPA_vect){ //toggles the lights every 1s
+	tick_count++;
+	if (tick_count > 64){
+		PORTD ^= (1<<PORTD5)|(1<<PORTD4);
+		tick_count = 0;
+	}
+}

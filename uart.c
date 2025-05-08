@@ -4,14 +4,15 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>
 
-#define NMEALENGTH 82
+#define NMEALENGTH 82 //standard length of an nmea message
 
-buffer *UART0RxBuffer = NULL; //something about null pointers being unsafe or something
+buffer *UART0RxBuffer = NULL; //pointers for all the uart buffers
 buffer *UART0TxBuffer = NULL;
-char *UART1RxBuffer = NULL;
-char *UART1RxOutput = NULL;
+char *UART1RxBuffer = NULL; //this buffer is what gets written on straight from UDR
+char *UART1RxOutput = NULL; //this buffer is a finished nmea message
 buffer *UART1TxBuffer = NULL;
 
+//getter functions for the uart buffer pointers
 buffer* getUART0RxBuffer(){
 	return UART0RxBuffer;
 }
@@ -89,14 +90,15 @@ void enableUART1Tx(){
 ISR(USART0_RX_vect){ //write to buffer from udr when receiving data.
 	writeBuffer(UART0RxBuffer, UDR0);
 }
+
 volatile unsigned char count = 0;
 ISR(USART1_RX_vect){
-	if(UDR1 == '$'){ //$ means the nmea message 
+	if(UDR1 == '$'){ //$ starts the nmea message
 		UART1RxBuffer[count++] = UDR1;
 	}
-	else if(UDR1 == '*'){
+	else if(UDR1 == '*'){ 	//the message ends at * which is not perfect and causes some funny stuff
 		UART1RxBuffer[count] = UDR1;
-		for(unsigned char i = 0; i < NMEALENGTH; i++){
+		for(unsigned char i = 0; i < NMEALENGTH; i++){ //copying the message to output when its complete
 			UART1RxOutput[i] = UART1RxBuffer[i];
 		}
 		count = 0;

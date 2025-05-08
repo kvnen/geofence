@@ -9,6 +9,9 @@ uint16_t ADCreading(void);  //Reads from PC0
 uint16_t geofence_radius(void);
 
 //LEDS
+void policeLightsOn();
+void policeLightsOff();
+void timer_for_led(void);
 void LEdint(void);
 void LEDred_on(void);
 void LEdred_off(void);

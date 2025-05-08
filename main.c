@@ -2,46 +2,10 @@
 #include <util/delay.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h> //delete later!!! need to make timebase etc...
 #include "nmea.h"
 #include "utils.h"
 #include "uart.h"
 #include "LCD.h"
-
-volatile uint16_t geofence_violation = 0;
-volatile uint16_t led_toggle_flag = 0;
-
-void timer_for_led(void) {
-	TCCR2A = (1 <<WGM21);
-	TCCR2B = (1 << CS22) | (1 <<CS20) | (1<<CS21);  //prescaler 1024
-	OCR2A = 255;
-	TIMSK2 |= (1<<OCIE2A);
-}
-volatile unsigned char tick_count = 0;
-
-ISR(TIMER2_COMPA_vect){
-	if (tick_count > 64){
-		tick_count = 0;
-		if (geofence_violation){
-		if (led_toggle_flag == 0)
-		{
-		
-		PORTD |=(1<<PORTD4);
-		PORTD &= ~(1<<PORTD5);
-		led_toggle_flag = 1;
-		} else {
-		
-		PORTD &= ~(1<<PORTD4);
-		PORTD |= (1<<PORTD5);
-		led_toggle_flag = 0;
-		}
-	} else {
-		PORTD &= ~(1<<PORTD4);
-		PORTD &= ~(1<<PORTD5);
-		led_toggle_flag =0;
-		}
-	}
-}
 
 int main(void){
 	// LCD!!
@@ -53,7 +17,7 @@ int main(void){
 	
 	ADCint(); // read potentiometer
 	LEdint(); //set ledpins
-
+	timer_for_led();
 	PWMint(); //buzzer with pwm
 	buttoninit();
 	initUART0(UBRR); //initializing the uarts
@@ -63,11 +27,10 @@ int main(void){
 
 	sei();
 
-	uint8_t home_set =0;
+	uint8_t home_set = 0;
 
 	enableUART1Tx();
-
-	for(unsigned char i = 0; i < 10; i++){
+	for(unsigned char i = 0; i < 10; i++){ //this sends the PMTK to the gps module many times so that it understands.
 		char pmtk_cmd[] = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
 		_delay_ms(100);
 		writeUART(getUART1TxBuffer(), pmtk_cmd,51);
@@ -85,19 +48,22 @@ int main(void){
 //		LCD_setCursor(0,1);
 //		LCD_print("          ");
 
-		writeUART(getUART0TxBuffer(), getUART1RxBuffer(), 82);
-		enableUART0Tx();
+//		writeUART(getUART0TxBuffer(), getUART1RxBuffer(), 82);
+//		enableUART0Tx();
 
 //		LCD_setCursor(0, 0);
 //		LCD_print(location.lats);
 //		LCD_setCursor(0, 1);
 //		LCD_print(location.lons);
 
+		policeLightsOn();
+
+		uint16_t radius = 0;
 		if(button_pressed() && !home_set){
 			LCD_setCursor(13, 1);
 			LCD_print("set");
 
-			uint16_t radius = geofence_radius();
+			radius = geofence_radius();
 
 			home_lat = location.lat;
 			home_lon = location.lon;
@@ -106,7 +72,6 @@ int main(void){
 			home_set = 1;
 		}
 
-		uint16_t radius = geofence_radius();
 		uint16_t distance = distance_calculation(home_lat, home_lon, location.lat, location.lon); 
 
 		if(radius < 10){
@@ -130,13 +95,33 @@ int main(void){
 			LCD_print("rad: 50");
 		}
 
+
+
+		if(distance < 10){
+			LCD_setCursor(0, 1);
+			LCD_print("dist: 10");
+		}
+		else if(distance < 20){
+			LCD_setCursor(0, 1);
+			LCD_print("dist: 20");
+		}
+		else if(distance < 30){
+			LCD_setCursor(0, 1);
+			LCD_print("dist: 30");
+		}
+		else if(distance < 40){
+			LCD_setCursor(0, 1);
+			LCD_print("dist: 40");
+		}
+		else if(distance < 50){
+			LCD_setCursor(0, 1);
+			LCD_print("dist: 50");
+		}
+
 		if (distance > radius){
-			geofence_violation = 1;
 			buzzeron();
 		} else{
-			geofence_violation = 0;
 			buzzeroff(); //buzzer off
 		}	
 	}
 }
-

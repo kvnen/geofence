@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include "nmea.h"
 
-char *tokenPtrs[15];
-void tokenize(char *input, char *tokenPtrs[], unsigned char maxTokens){
+char *tokenPtrs[15]; //array of pointers to the tokenized strings 
+//replaces all ',' with \0 in a string and places a pointer on the first char of every string
+void tokenize(char *input, char *tokenPtrs[], unsigned char maxTokens){ 
 	unsigned char tokens = 0;
 	tokenPtrs[tokens++] = input;
 	for(unsigned char i = 0; tokens < maxTokens && input[i] != '*'; i++){
@@ -12,7 +13,7 @@ void tokenize(char *input, char *tokenPtrs[], unsigned char maxTokens){
 		}
 	}
 }
-
+//takes NMEA GPGGA input and outputs the data as floats/strings or integers
 posdata parseNMEA(char *input) {
 	tokenize(input, tokenPtrs, 15);
 	posdata output;
