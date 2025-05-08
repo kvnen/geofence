@@ -82,20 +82,27 @@ float deg_to_rad(float deg) {
     return deg * (PI / 180.0f);
 }
 
-// Flat Earth distance approximation using floats
-float distance_calculation(float lat1, float lon1, float lat2, float lon2) {
-    // Coordinate differences
+// Convert NMEA ddmm.mmmm format to decimal degrees
+float nmea_to_decimal(float val) {
+    int degrees = (int)(val / 100);
+    float minutes = val - (degrees * 100);
+    return degrees + (minutes / 60.0f);
+}
+
+// Combined: accepts NMEA-format coordinates and returns distance in meters
+float distance_calculation(float raw_lat1, float raw_lon1, float raw_lat2, float raw_lon2) {
+    float lat1 = nmea_to_decimal(raw_lat1);
+    float lon1 = nmea_to_decimal(raw_lon1);
+    float lat2 = nmea_to_decimal(raw_lat2);
+    float lon2 = nmea_to_decimal(raw_lon2);
+
     float dLat = lat2 - lat1;
     float dLon = lon2 - lon1;
 
-    // Convert latitude difference to meters
     float latDist = dLat * DEGTOMETER;
-
-    // Use average latitude to convert longitude
     float avgLat = (lat1 + lat2) / 2.0f;
     float lonDist = dLon * DEGTOMETER * cosf(deg_to_rad(avgLat));
 
-    // Pythagorean distance
     return sqrtf(latDist * latDist + lonDist * lonDist);
 }
 
@@ -141,7 +148,7 @@ void policeLightsOn(){ //checks if the lights are already on and then turns them
 
 void policeLightsOff(){ //turns of the lights 
 	TIMSK2 &= ~(1<<OCIE2A);
-	PORTD &= ~(1<<PORTD5)|(1<<PORTD4);
+	PORTD &= ~((1<<PORTD5)|(1<<PORTD4));
 }
 
 volatile unsigned char tick_count = 0; 

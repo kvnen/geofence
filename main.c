@@ -25,6 +25,7 @@ int main(void){
 	float home_lat = 0.0;
 	float home_lon = 0.0;
 	uint16_t radius = 0;
+	unsigned short distance = 0;
 
 	sei();
 
@@ -57,8 +58,6 @@ int main(void){
 //		LCD_setCursor(0, 1);
 //		LCD_print(location.lons);
 
-		policeLightsOn();
-
 		if(button_pressed() && !home_set){
 			LCD_setCursor(13, 1);
 			LCD_print("set");
@@ -68,29 +67,33 @@ int main(void){
 			home_lat = location.lat;
 			home_lon = location.lon;
 
-			area_save(location.lat,location.lon , radius);
 			home_set = 1;
 		}
 
-		uint16_t distance = distance_calculation(home_lat, home_lon, location.lat, location.lon); 
+		if(home_set){
+			distance = distance_calculation(home_lat, home_lon, location.lat, location.lon); 
+		}
+		else{
+			distance = 0;
+		}
 
-		if(radius < 10){
+		if(geofence_radius() < 10){
 			LCD_setCursor(0, 0);
 			LCD_print("rad: 10");
 		}
-		else if(radius < 20){
+		else if(geofence_radius() < 20){
 			LCD_setCursor(0, 0);
 			LCD_print("rad: 20");
 		}
-		else if(radius < 30){
+		else if(geofence_radius() < 30){
 			LCD_setCursor(0, 0);
 			LCD_print("rad: 30");
 		}
-		else if(radius < 40){
+		else if(geofence_radius() < 40){
 			LCD_setCursor(0, 0);
 			LCD_print("rad: 40");
 		}
-		else if(radius < 50){
+		else if(geofence_radius() < 50){
 			LCD_setCursor(0, 0);
 			LCD_print("rad: 50");
 		}
@@ -120,8 +123,10 @@ int main(void){
 
 		if (distance > radius){
 			buzzeron();
+			policeLightsOn();
 		} else{
 			buzzeroff(); //buzzer off
+			policeLightsOff();
 		}	
 	}
 }
