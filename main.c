@@ -43,6 +43,8 @@ ISR(TIMER2_COMPA_vect){
 	}
 }
 
+
+// calling for LCD parameters, functions etc. 
 int main(void){
 	// LCD!!
 	
