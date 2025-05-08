@@ -80,18 +80,18 @@ int main(void){
 	{
 		location = parseNMEA(getUART1RxBuffer());
 		
-		LCD_setCursor(0,0);
-		LCD_print("          ");
-		LCD_setCursor(0,1);
-		LCD_print("          ");
+//		LCD_setCursor(0,0);
+//		LCD_print("          ");
+//		LCD_setCursor(0,1);
+//		LCD_print("          ");
 
 		writeUART(getUART0TxBuffer(), getUART1RxBuffer(), 82);
 		enableUART0Tx();
 
-		LCD_setCursor(0, 0);
-		LCD_print(location.lats);
-		LCD_setCursor(0, 1);
-		LCD_print(location.lons);
+//		LCD_setCursor(0, 0);
+//		LCD_print(location.lats);
+//		LCD_setCursor(0, 1);
+//		LCD_print(location.lons);
 
 		if(button_pressed() && !home_set){
 			LCD_setCursor(13, 1);
@@ -108,6 +108,27 @@ int main(void){
 
 		uint16_t radius = geofence_radius();
 		uint16_t distance = distance_calculation(home_lat, home_lon, location.lat, location.lon); 
+
+		if(radius < 10){
+			LCD_setCursor(0, 0);
+			LCD_print("rad: 10");
+		}
+		else if(radius < 20){
+			LCD_setCursor(0, 0);
+			LCD_print("rad: 20");
+		}
+		else if(radius < 30){
+			LCD_setCursor(0, 0);
+			LCD_print("rad: 30");
+		}
+		else if(radius < 40){
+			LCD_setCursor(0, 0);
+			LCD_print("rad: 40");
+		}
+		else if(radius < 50){
+			LCD_setCursor(0, 0);
+			LCD_print("rad: 50");
+		}
 
 		if (distance > radius){
 			geofence_violation = 1;

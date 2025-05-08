@@ -21,7 +21,7 @@ uint16_t ADCreading(void){
 	
 uint16_t geofence_radius(void){
 	uint16_t ADCvalue = ADCreading(); //potentiometer on PC0
-	return 5 + ((uint32_t)ADCvalue*(10 - 5)) /1023;
+	return 5 + ((uint32_t)ADCvalue*(50 - 5)) /1023;
 	//This should scale 0-1023 to our wanted range (for now) 5-100meters
 }
 
