@@ -116,23 +116,6 @@ void buttoninit(void) {
 	PORTD |= (1 << PORTD2);  // Enable pull-up resistor
 }
 
-
-uint8_t button_pressed(void) {
-	static uint8_t last_state = 0;
-	uint8_t current_state = !(PIND & (1 << PIND2));
-	if (current_state && !last_state) {
-		_delay_ms(10); // debounce delay
-		if (!(PIND & (1 << PIND2))) {
-			last_state = 1;
-			return 1; // Press detected
-		}
-	}
-	if (!current_state) {
-		last_state = 0;
-	}
-	return 0;
-}
-
 void timer_for_led(void) { //setup for timer that blinks the leds
 	TCCR2A |= (1 <<WGM21);
 	TCCR2B |= (1 << CS22) | (1 <<CS20) | (1<<CS21);  //prescaler 1024
@@ -160,3 +143,43 @@ ISR(TIMER2_COMPA_vect){ //toggles the lights every 1s
 		tick_count = 0;
 	}
 }
+
+
+
+
+
+
+void buttoninit(void) [{
+DDRD &= ~(1<<DDRD2);
+PORTD |=(1<<PORTD2);
+PCICR |= (1<<PCIE1); //enable pin change interrupt group
+PCMSK2 |= (1<<PCINT18); // enable pcint2
+sei(); //global interrupts
+}
+
+volatile unsigned char state = 0;
+
+ISR(PCINT2_vect) {
+	unsigned char last_state = 1;
+	unsigned char current_state = !(PIND & (1 << PIND2));
+	if (current_state && !last_state) {
+		_delay_ms(10); // debounce delay
+	
+	if (!(PIND & (1 << PIND2))) {
+		state = 1;
+	}
+}
+	last_state = current_state;
+	}
+	
+uint8_t button_pressed(void) {
+	if (state) {
+		state = 0;
+		return 1;
+	}
+	return 0;
+}
+		
+	
+
+
