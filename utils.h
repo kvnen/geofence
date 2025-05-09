@@ -3,6 +3,12 @@
 
 #include <avr/io.h>
 
+#ifndef MAXRANGE
+#define MAXRANGE 50
+#endif
+#ifndef MINRANGE
+#define MINRANGE 5
+#endif
 // ADC convert (pontentiometer)
 void ADCint(void);
 uint16_t ADCreading(void);  //Reads from PC0
@@ -21,16 +27,14 @@ void LEDblink(void); //changing blue/red
 
 //buzzer and PWM
 void PWMint(void);
-void buzzeron(void);
+void buzzeron(unsigned char input);
 void buzzeroff(void);
 
-
-
-//setting "home" and checking distance
-void area_save(float lat, float lon, uint16_t radius);
-float distance_calculation(float lat1, float lon1, float lat2, float lon2);
-uint16_t geofence_check(float current_lat, float current_lon);
-#endif
-
+//button things
 void buttoninit(void);
 uint8_t button_pressed(void);
+
+//setting "home" and checking distance
+float distance_calculation(float lat1, float lon1, float lat2, float lon2);
+#endif
+

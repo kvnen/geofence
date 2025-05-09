@@ -77,25 +77,27 @@ int main(void){
 			distance = 0;
 		}
 
-		if(geofence_radius() < 10){
-			LCD_setCursor(0, 0);
-			LCD_print("rad: 10");
-		}
-		else if(geofence_radius() < 20){
-			LCD_setCursor(0, 0);
-			LCD_print("rad: 20");
-		}
-		else if(geofence_radius() < 30){
-			LCD_setCursor(0, 0);
-			LCD_print("rad: 30");
-		}
-		else if(geofence_radius() < 40){
-			LCD_setCursor(0, 0);
-			LCD_print("rad: 40");
-		}
-		else if(geofence_radius() < 50){
-			LCD_setCursor(0, 0);
-			LCD_print("rad: 50");
+		if(!home_set){
+			if(geofence_radius() < 10){
+				LCD_setCursor(0, 0);
+				LCD_print("rad: 10");
+			}
+			else if(geofence_radius() < 20){
+				LCD_setCursor(0, 0);
+				LCD_print("rad: 20");
+			}
+			else if(geofence_radius() < 30){
+				LCD_setCursor(0, 0);
+				LCD_print("rad: 30");
+			}
+			else if(geofence_radius() < 40){
+				LCD_setCursor(0, 0);
+				LCD_print("rad: 40");
+			}
+			else if(geofence_radius() < 50){
+				LCD_setCursor(0, 0);
+				LCD_print("rad: 50");
+			}
 		}
 
 
@@ -122,10 +124,8 @@ int main(void){
 		}
 
 		if (distance > radius){
-			buzzeron();
 			policeLightsOn();
 		} else{
-			buzzeroff(); //buzzer off
 			policeLightsOff();
 		}	
 	}

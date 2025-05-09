@@ -1,10 +1,9 @@
-#define F_CPU 16000000UL
-#include <util/delay.h>
 #include "utils.h"
+#define F_CPU 16000000UL
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <math.h>
-
+#include <util/delay.h>
 #define DEGTOMETER 111320.0 //approx lenght in meters per degree
 #define PI 3.14159265f 
 
@@ -21,14 +20,13 @@ uint16_t ADCreading(void){
 	
 uint16_t geofence_radius(void){
 	uint16_t ADCvalue = ADCreading(); //potentiometer on PC0
-	return 5 + ((uint32_t)ADCvalue*(50 - 5)) /1023;
-	//This should scale 0-1023 to our wanted range (for now) 5-100meters
+	return 5 + ((uint32_t)ADCvalue*(MAXRANGE - MINRANGE)) /1023; // min and max range should be set in main
 }
 
 //Setting up all the led states
 
 void LEdint(void){
-	DDRD |= (1<<DDRD4) | (1<<DDRD5); //PD4 is red, PD5 is blue
+	DDRD |= (1<<DDRD4) | (1<<DDRD6); //PD4 is red, PD5 is blue
 }
 
 void LEDred_on(void){
@@ -40,56 +38,44 @@ void LEdred_off(void){
 }
 
 void LEDblue_on(void){
-	PORTD |= (1<<PORTD5);
+	PORTD |= (1<<PORTD6);
 }
 
 void LEDblue_off(void){
-	PORTD &= ~(1 << PORTD5);
+	PORTD &= ~(1 << PORTD6);
 }
-
-//blinking with the leds using timer2
-
-
 
 //PWM setup
 void PWMint(void){
-	TCCR0A = (1<<COM0A1) | (1<<WGM01) | (1<<WGM00); //fast pwm
-	TCCR0B = (1<<CS00)|(1<<CS01); //prescaler 8
-	OCR0A = 124; // 100% 
+	TCCR0A = (1<<COM0B1) | (1<<WGM02) | (1<<WGM01) | (1<<WGM00); //fast pwm top = ocra
+	TCCR0B = (1<<CS00)|(1<<CS01); //prescaler 64
+	OCR0A = 255;  //top value
+	OCR0B = 124;  //this controls dutycycle
 }	
-void buzzeron(void){
-	DDRD |= (1<<PORTD6);
+
+void buzzeron(unsigned char value){ //turns on the buzzer and controls the frequency
+	DDRD |= (1<<PORTD5); 
+	OCR0A = value;
+	OCR0B = value/2; // for now the dutycycle is always 50% idk what is good for buzzer
 }
+
 void buzzeroff(void){
-	DDRD &= ~(1<<PORTD6);
+	DDRD &= ~(1<<PORTD5);
 }
 
-
-
-
-float home_lat = 0.0;
-float home_lon = 0.0;
-uint16_t home_radius = 0;
-
-void area_save(float lat, float lon, uint16_t radius){
-	home_lat = lat;
-	home_lon = lon;
-	home_radius = radius;
-}
-
-// Convert degrees to radians
+//convert degrees to radians
 float deg_to_rad(float deg) {
     return deg * (PI / 180.0f);
 }
 
-// Convert NMEA ddmm.mmmm format to decimal degrees
+//NMEA format to decimal degrees
 float nmea_to_decimal(float val) {
     int degrees = (int)(val / 100);
     float minutes = val - (degrees * 100);
     return degrees + (minutes / 60.0f);
 }
 
-// Combined: accepts NMEA-format coordinates and returns distance in meters
+//accepts NMEA-format coordinates and returns distance in meters
 float distance_calculation(float raw_lat1, float raw_lon1, float raw_lat2, float raw_lon2) {
     float lat1 = nmea_to_decimal(raw_lat1);
     float lon1 = nmea_to_decimal(raw_lon1);
@@ -104,11 +90,6 @@ float distance_calculation(float raw_lat1, float raw_lon1, float raw_lat2, float
     float lonDist = dLon * DEGTOMETER * cosf(deg_to_rad(avgLat));
 
     return sqrtf(latDist * latDist + lonDist * lonDist);
-}
-
-uint16_t geofence_check(float current_lat, float current_lon){
-	float distance = distance_calculation(home_lat, home_lon, current_lat, current_lon);
-	return(distance>home_radius);
 }
 
 void buttoninit(void) {
@@ -147,8 +128,9 @@ void policeLightsOn(){ //checks if the lights are already on and then turns them
 }
 
 void policeLightsOff(){ //turns of the lights 
+	buzzeroff();
 	TIMSK2 &= ~(1<<OCIE2A);
-	PORTD &= ~((1<<PORTD5)|(1<<PORTD4));
+	PORTD &= ~((1<<PORTD6)|(1<<PORTD4));
 }
 
 volatile unsigned char tick_count = 0; 
@@ -156,7 +138,13 @@ volatile unsigned char tick_count = 0;
 ISR(TIMER2_COMPA_vect){ //toggles the lights every 1s
 	tick_count++;
 	if (tick_count > 64){
-		PORTD ^= (1<<PORTD5)|(1<<PORTD4);
+		PORTD ^= (1<<PORTD6)|(1<<PORTD4);
 		tick_count = 0;
+		if(OCR0A == 255){ //also added the buzzer here for alternating tones and stuff
+			buzzeron(100);
+		}
+		else{
+			buzzeron(255);
+		}
 	}
 }
